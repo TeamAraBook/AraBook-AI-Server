@@ -6,6 +6,7 @@ import time
 
 # 도서 검색 결과 페이지에서 해시태그 정보 가져오기
 def get_hashtags(isbn):
+    standard_category = load_categories(file_path="categories.txt")
     search_url = f"https://search.kyobobook.co.kr/search?keyword={isbn}"
     
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -18,10 +19,14 @@ def get_hashtags(isbn):
         hashtags_elements = driver.find_elements(By.CSS_SELECTOR, 'a.tag')
         hashtags = [tag.text for tag in hashtags_elements]
         hashtags = [tag.replace("#", "") for tag in hashtags]   # 해시태그 기호 제거
-        category = hashtags[0]  # 첫 번째 해시태그는 카테고리로 사용
-        hashtags = list(set(hashtags[1:]))[1:]  # 중복 제거 후 두 번째 해시태그부터 사용
+        hashtags = list(set(hashtags))  # 중복 제거
+        categories = []
+        for tag in hashtags:
+            if tag in standard_category:
+                categories.append(tag)
+                hashtags.remove(tag)
 
-        return category, hashtags
+        return categories, hashtags
     
     except Exception as e:
         print(f"해시태그를 찾는 중 오류 발생: {e}")
@@ -29,8 +34,18 @@ def get_hashtags(isbn):
     
     driver.quit()
 
-# 예시 실행
+# 카테고리 파일에서 카테고리 리스트 가져오기
+def load_categories(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            categories = [line.strip() for line in file.readlines()]
+        return categories
+    except Exception as e:
+        print(f"카테고리 파일을 읽는 중 오류 발생: {e}")
+        return []
+
+# # 예시 실행
 # isbn = "9788925538297"
-isbn = '9788954699372'
-category, hashtags = get_hashtags(isbn)
-print(f"{isbn}\n카테고리: {category}, 해시태그 목록: {hashtags}")
+# # isbn = '9788954699372'
+# category, hashtags = get_hashtags(isbn)
+# print(f"{isbn}\n카테고리: {category}, 해시태그 목록: {hashtags}")
