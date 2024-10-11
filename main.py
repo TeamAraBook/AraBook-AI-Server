@@ -3,6 +3,8 @@ import openai
 from fastapi import FastAPI
 from pydantic import BaseModel
 import os
+from book_info import get_book_info_by_isbn
+from database_conn import insert_book_info_to_db
 
 from category_classifier import classify_category
 from crawling import get_hashtags
@@ -34,21 +36,9 @@ class CrawlMessageRequest(BaseModel):
     isbn: str
     max_tokens: int = 100
 
-
-# 기본 함수
-@app.post("/generate/")
-async def generate_text(request: GenerateMessageRequest):
-    try:
-        # OpenAI API 호출
-        response = openai.Completion.create(model=request.model,
-        messages=[{"role": "user", "content": request.prompt}],
-        max_tokens=request.max_tokens)
-        # API 응답에서 텍스트 부분 추출
-        generated_text = response.choices[0].message.content
-        return {"generated_text": generated_text}
-    except Exception as e:
-        return {"error": str(e)}
-    
+class AddBookRequest(BaseModel):
+    isbn: str
+        
 # 카테고리 분류 함수
 @app.post("/classify/")
 async def classify(request: ClassifyMessageRequest):
@@ -68,6 +58,20 @@ async def crawl(request: CrawlMessageRequest):
         return {"isbn": request.isbn, "hashtags": get_hashtags(request.isbn)}
     except Exception as e:
         return {"error": str(e)}
+    
+@app.post("/add-book/")
+async def add_book(request: AddBookRequest):
+    try:
+        book = get_book_info_by_isbn(request.isbn)
+        category = classify_category(book.title, book.author, book.isbn, book.description, 100)
+        hashtag = get_hashtags(book.isbn)
+        print(category)
+        insert_book_info_to_db(book, category_names=category, hashtags=hashtag)
+        return "200 OK"
+    except Exception as e:
+        return {"error": str(e)}
+        
+        
 
 if __name__ == "__main__":
     import uvicorn
