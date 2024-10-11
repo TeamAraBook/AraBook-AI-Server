@@ -49,12 +49,10 @@ class CrawlMessageRequest(BaseModel):
     isbn: str
     max_tokens: int = 100
 
-<<<<<<< HEAD
 class AddBookRequest(BaseModel):
     isbn: str
         
 # 카테고리 분류 함수
-=======
 class BookRequest(BaseModel):
     title: str
     author: str
@@ -79,7 +77,6 @@ async def generate_text(request: GenerateMessageRequest):
         return {"error": str(e)}
     
 # 카테고리 분류 엔드포인트
->>>>>>> 18605cc260c48c4567b087dad904df824baa72f8
 @app.post("/classify/")
 async def classify(request: ClassifyMessageRequest):
     try:
@@ -99,7 +96,6 @@ async def crawl(request: CrawlMessageRequest):
     except Exception as e:
         return {"error": str(e)}
     
-<<<<<<< HEAD
 @app.post("/add-book/")
 async def add_book(request: AddBookRequest):
     try:
@@ -113,7 +109,6 @@ async def add_book(request: AddBookRequest):
         return {"error": str(e)}
         
         
-=======
 # 책 정보 추가 엔드포인트
 @app.post("/add_book/")
 async def add_book(request: BookRequest):
@@ -156,8 +151,6 @@ async def get_book(isbn: str):
     else:
         # 결과가 없는 경우
         raise HTTPException(status_code=404, detail="책 정보를 찾을 수 없습니다.")
-
->>>>>>> 18605cc260c48c4567b087dad904df824baa72f8
 
 if __name__ == "__main__":
     import uvicorn
