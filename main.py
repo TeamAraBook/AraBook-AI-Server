@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import os
 
 from category_classifier import classify_category
+from crawling import get_hashtags
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -29,8 +30,12 @@ class ClassifyMessageRequest(BaseModel):
     description: str
     max_tokens: int = 100
 
+class CrawlMessageRequest(BaseModel):
+    isbn: str
+    max_tokens: int = 100
 
-# POST 요청을 처리하는 엔드포인트
+
+# 기본 함수
 @app.post("/generate/")
 async def generate_text(request: GenerateMessageRequest):
     try:
@@ -44,7 +49,7 @@ async def generate_text(request: GenerateMessageRequest):
     except Exception as e:
         return {"error": str(e)}
     
-# POST 요청을 처리하는 엔드포인트
+# 카테고리 분류 함수
 @app.post("/classify/")
 async def classify(request: ClassifyMessageRequest):
     try:
@@ -52,6 +57,15 @@ async def classify(request: ClassifyMessageRequest):
         category = classify_category(request.title, request.author, request.isbn, request.description, request.max_tokens)
         return {"title": request.title, "category": category}
 
+    except Exception as e:
+        return {"error": str(e)}
+    
+# 도서 정보 크롤링 함수
+@app.post("/crawl/")
+async def crawl(request: CrawlMessageRequest):
+    try:
+        # 도서 정보 크롤링 함수 호출
+        return {"isbn": request.isbn, "hashtags": get_hashtags(request.isbn)}
     except Exception as e:
         return {"error": str(e)}
 
