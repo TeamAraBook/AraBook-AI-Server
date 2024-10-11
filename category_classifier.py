@@ -25,7 +25,7 @@ def classify_category(title, author, isbn, description, max_tokens):
     역사 - 한국 고대사, 조선사, 한국 근현대사, 세계사,
     판타지/무협지 - 무협, 퓨전 판타지, 현대 판타지, 해외 판타지, 게임 판타지, 전쟁/대체역사, 라이트노벨.
     카테고리의 대분류는 하나만 가질 수 있고, 소분류는 여러 개 가질 수 있어.
-    카테고리를 분류해서 '대분류-소분류' 형태로 알려줘. (한국어로)
+    카테고리를 분류해서 소분류만 리스트로 반환해줘. (한국어로)
     """
     # 책 정보 포함
     book_info = f"Title: {title}, Author: {author}, ISBN: {isbn}, Description: {description}"
