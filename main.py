@@ -48,7 +48,6 @@ class CrawlMessageRequest(BaseModel):
 class AddBookRequest(BaseModel):
     isbn: str
 
-# 카테고리 분류 함수
 class BookRequest(BaseModel):
     title: str
     author: str
@@ -57,6 +56,9 @@ class BookRequest(BaseModel):
     mainCategory: str
     subCategory: list
     hashtags: list
+
+class RecommendRequest(BaseModel):
+    member_id: int
 
 # 기본 엔드포인트
 @app.post("/generate")
@@ -136,7 +138,17 @@ async def get_book(isbn: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
+# 도서 추천 엔드포인트
+@app.post("/recommend")
+async def recommend(request: RecommendRequest):
+    # 도서 추천 요청 처리
+    try:
+        result = chroma_manager.recommend_book(request.member_id)
+        return {"message": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 if __name__ == "__main__":
     import uvicorn

@@ -43,10 +43,19 @@ def classify_category(title, author, isbn, description, hashtags):
     # 책 정보 포함
     full_prompt = base_prompt.format(title=title, author=author, isbn=isbn, description=description, hashtags=hashtags)
 
+    # OpenAI API 호출
     response = client(full_prompt)
- 
+    # 응답 처리
     response_text = response.content.strip()
-    main_category = response_text.split("\n")[0].split(" -")[1].strip()
-    sub_categories = response_text.split("\n")[1].split(" -")[1].strip().split(", ")
+    
+    if not response_text:
+        return None, []  # 빈 응답 처리
 
-    return main_category, sub_categories
+    # 주어진 형식에 맞게 응답 파싱
+    try:
+        main_category = response_text.split("\n")[0].split(" -")[1].strip()
+        sub_categories = response_text.split("\n")[1].split(" -")[1].strip().split(", ")
+        return main_category, sub_categories
+    except IndexError:
+        print("응답 형식이 예상과 다릅니다.")
+        return None, []

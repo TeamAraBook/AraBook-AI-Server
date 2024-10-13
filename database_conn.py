@@ -129,3 +129,61 @@ def insert_book_info_to_db(book, category_names, hashtags):
     finally:
         connection.close()  # 연결 종료
         tunnel.close()  # 터널 종료
+
+def get_member_preferences(member_id):
+    """사용자의 선호 서브 카테고리 ID 리스트를 반환합니다."""
+    connection, tunnel = connect_to_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                SELECT sc.sub_category_name
+                FROM member_sub_category_selections ms
+                JOIN sub_categories sc ON ms.sub_category_id = sc.sub_category_id
+                WHERE ms.member_id = %s
+                """
+
+            cursor.execute(sql, (member_id,))
+            results = cursor.fetchall()
+            return [row['sub_category_name'] for row in results]
+    except Exception as e:
+        print(f"Error occurred, Error: {e}")
+    finally:
+        connection.close()
+        tunnel.close()
+
+def get_book_id_by_isbn(isbn: str) -> int:
+    connection, tunnel = connect_to_db()  # 연결 생성
+    if not connection:
+        print("Failed to connect to the database.")
+        return
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT book_id FROM books WHERE isbn = %s", (isbn,))
+            result = cursor.fetchone()
+            if result:
+                return result['book_id']
+            else:
+                return None  # 책이 없는 경우
+    except Exception as e:
+        print(f"Error occurred, Error: {e}")
+    finally:
+        connection.close()
+        tunnel.close()
+
+    return result[0] if result else None
+
+
+def save_recommendation(member_id, book_id, recommendation_date):
+    """추천된 책 정보를 daily_book_id_recommendations 테이블에 저장합니다."""
+    connection, tunnel = connect_to_db()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+            INSERT INTO daily_book_id_recommendations (member_id, book_id, recommendation_date)
+            VALUES (%s, %s, %s)
+            """
+            cursor.execute(sql, (member_id, book_id, recommendation_date))
+            connection.commit()
+    finally:
+        connection.close()
+        tunnel.close()

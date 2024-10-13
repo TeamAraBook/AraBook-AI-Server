@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
 import os
 from typing import List
 from fastapi import HTTPException
+from database_conn import get_book_id_by_isbn, get_member_preferences, save_recommendation
 from langchain_openai import OpenAIEmbeddings
 import chromadb
 
@@ -73,4 +75,35 @@ class ChromaManager:
             "mainCategory": metadata["mainCategory"],
             "subCategory": metadata["subCategory"],
         }
+    
+    def recommend_book(self, member_id: str) -> str:
+        preferences = get_member_preferences(member_id)
+        if not preferences:
+            return "No preferences found for the member."
+
+        query = " ".join(preferences)
+        embedding = self.embedding_function.embed_query(query)
+
+        results = self.collection.query(query_embeddings=embedding, n_results=1)
+        
+        if results['documents'] and results['metadatas']:
+            # 메타데이터에서 ISBN 가져오기
+            metadata = results['metadatas'][0][0]  # 이중 리스트에서 첫 번째 메타데이터 가져오기
+            isbn = metadata['isbn']
+            
+            # ISBN으로 MySQL에서 book_id를 검색합니다.
+            book_id = get_book_id_by_isbn(isbn)  # 새로운 함수 추가 필요
+            if not book_id:
+                return "No book ID found for the given ISBN."
+            
+            recommendation_date = (datetime.now() + timedelta(days=1)).date()
+            
+            # MySQL에 book_id를 저장합니다.
+            save_recommendation(member_id, book_id, recommendation_date)
+            
+            return f"Recommended book ID: {book_id}"
+        else:
+            return "No book found for the given preferences."
+
+
 
