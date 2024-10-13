@@ -10,8 +10,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 model_engine = "gpt-4"
 
 # 카테고리 분류 함수
-def classify_category(title, author, isbn, description, max_tokens):
-    base_prompt = """웹사이트에서 이 책의 정보를 검색해서 카테고리를 분류해줘. title, author, isbn, description 정보를 활용할 수 있어.
+def classify_category(title, author, isbn, description, hashtags):
+    base_prompt = """웹사이트에서 이 책의 정보를 검색해서 카테고리를 분류해줘.
     분류될 수 있는 카테고리의 대분류는 다음과 같아: 소설, 시/에세이, 자기계발, 인문, 여행, 철학, 사회, 과학, 역사, 판타지/무협지.
     각 대분류에 따른 소분류는 다음과 같아:
     소설 - 추리/스릴러, SF, 판타지, 공포, 영화/드라마 원작, 역사, 사랑, 청소년,
@@ -25,19 +25,29 @@ def classify_category(title, author, isbn, description, max_tokens):
     역사 - 한국 고대사, 조선사, 한국 근현대사, 세계사,
     판타지/무협지 - 무협, 퓨전 판타지, 현대 판타지, 해외 판타지, 게임 판타지, 전쟁/대체역사, 라이트노벨.
     카테고리의 대분류는 하나만 가질 수 있고, 소분류는 여러 개 가질 수 있어.
-    카테고리를 분류해서 소분류만 리스트로 반환해줘. (한국어로)
+    책의 카테고리를 분류해줘. 
+    형식은 '대분류 - 소분류1, 소분류2, 소분류3'으로 해줘.
+
+    예시:
+    대분류 - 소분류1, 소분류2, 소분류3
+
+    책 정보:
+    - 제목: {title}
+    - 저자: {author}
+    - ISBN: {isbn}
+    - 설명: {description}
+    - 해시태그: {hashtags}
     """
     # 책 정보 포함
-    book_info = f"Title: {title}, Author: {author}, ISBN: {isbn}, Description: {description}"
-    full_prompt = f"{base_prompt}\n{book_info}"
+    full_prompt = f"{base_prompt}".format(title=title, author=author, isbn=isbn, description=description, hashtags=hashtags)
     response = openai.ChatCompletion.create(
         model=model_engine,
         messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are a helpful book-category-classifier."},
             {"role": "user", "content": full_prompt}
         ],
-        max_tokens=max_tokens,
+        max_tokens=100,
         temperature=0.7,
     )
 
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip().split("- ")[-1].split(", ")
