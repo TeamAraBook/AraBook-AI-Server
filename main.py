@@ -43,7 +43,7 @@ class ClassifyMessageRequest(BaseModel):
     author: str
     isbn: str
     description: str
-    max_tokens: int = 100
+    hashtags: list
 
 class CrawlMessageRequest(BaseModel):
     isbn: str
@@ -80,8 +80,14 @@ async def generate_text(request: GenerateMessageRequest):
 @app.post("/classify/")
 async def classify(request: ClassifyMessageRequest):
     try:
+        title = request.title
+        author = request.author
+        isbn = request.isbn
+        description = request.description
+        hashtags = get_hashtags(isbn)
+
         # 카테고리 분류 함수 호출
-        category = classify_category(request.title, request.author, request.isbn, request.description, request.max_tokens)
+        category = classify_category(title, author, isbn, description, hashtags)
         return {"title": request.title, "category": category}
 
     except Exception as e:
@@ -138,15 +144,6 @@ async def get_book(isbn: str):
     if results["documents"]:
         # 결과가 있을 경우
         book_info = results["metadatas"][0][0]  # 첫 번째 메타데이터 가져오기
-        # return {
-        #     "title": book_info["title"],
-        #     "author": book_info["author"],
-        #     "isbn": book_info["isbn"],
-        #     "description": results["documents"][0],  # 문서 내용 (설명)
-        #     "hashtags": book_info["hashtags"].split(', '),  # 해시태그 리스트로 변환
-        #     "mainCategory": book_info["mainCategory"],
-        #     "subCategory": book_info["subCategory"].split(', ')  # 소분류 리스트로 변환
-        # }
         return book_info
     else:
         # 결과가 없는 경우
