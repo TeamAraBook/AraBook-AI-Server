@@ -1,13 +1,14 @@
 from dotenv import load_dotenv
 import openai
 import os
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
-
 
 # OpenAI API Key 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
 model_engine = "gpt-4"
+client = ChatOpenAI(model_name=model_engine)
 
 # 카테고리 분류 함수
 def classify_category(title, author, isbn, description, hashtags):
@@ -38,16 +39,14 @@ def classify_category(title, author, isbn, description, hashtags):
     - 설명: {description}
     - 해시태그: {hashtags}
     """
-    # 책 정보 포함
-    full_prompt = f"{base_prompt}".format(title=title, author=author, isbn=isbn, description=description, hashtags=hashtags)
-    response = openai.ChatCompletion.create(
-        model=model_engine,
-        messages=[
-            {"role": "system", "content": "You are a helpful book-category-classifier."},
-            {"role": "user", "content": full_prompt}
-        ],
-        max_tokens=100,
-        temperature=0.7,
-    )
 
-    return response.choices[0].message.content.strip().split("- ")[-1].split(", ")
+    # 책 정보 포함
+    full_prompt = base_prompt.format(title=title, author=author, isbn=isbn, description=description, hashtags=hashtags)
+
+    response = client(full_prompt)
+ 
+    response_text = response.content.strip()
+    main_category = response_text.split("\n")[0].split(" -")[1].strip()
+    sub_categories = response_text.split("\n")[1].split(" -")[1].strip().split(", ")
+
+    return main_category, sub_categories
