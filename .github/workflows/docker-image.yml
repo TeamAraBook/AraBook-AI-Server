@@ -3,10 +3,10 @@ name: Docker Image CI
 on:
   push:
     branches:
-      - main  # main 브랜치에 푸시될 때 트리거
+      - develop
   pull_request:
     branches:
-      - main
+      - develop
 
 jobs:
   build:
