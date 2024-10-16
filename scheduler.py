@@ -1,5 +1,5 @@
 import time
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from database_conn import get_all_member_ids
 from database_conn import insert_book_info_to_db
@@ -13,12 +13,11 @@ from crawling import get_hashtags
 
 from chroma_manager import ChromaManager
 
-global chroma_manager
+chroma_manager = ChromaManager(persist_directory="./chroma_db", collection_name="books")
 
-def run_recommendations_for_all_members():
+async def run_recommendations_for_all_members():
     # MySQL에서 전체 member_id 가져오기
     member_ids = get_all_member_ids()
-    chroma_manager = ChromaManager(persist_directory="./chroma_db", collection_name="books")
     print("Running recommendations for all members...")
     # 각 멤버에 대해 도서 추천 함수 실행
     for member_id in member_ids:
@@ -26,7 +25,7 @@ def run_recommendations_for_all_members():
     print("Recommendations for all members have been completed.")
     
 # 베스트셀러 업데이트 작업 정의
-def best_sellers_update_task():
+async def best_sellers_update_task():
     best_sellers_list_from_aladin = get_best_sellers()
     best_sellers_for_save = []
     
@@ -69,24 +68,25 @@ def best_sellers_update_task():
     insert_best_sellers(best_sellers_for_save)
     print("스케줄러 종료")
 
+
 # 스케줄러 설정 함수
 def start_scheduler():
-    scheduler = BackgroundScheduler()
+    scheduler = AsyncIOScheduler()
 
-    # 매일 오후 3시 5분에 스케줄러 실행
+    # 매일 오전 0시 1분에 스케줄러 실행
     scheduler.add_job(run_recommendations_for_all_members, 'cron', hour=0, minute=1)
     
     # # 스케줄러에 작업 추가 (매 1분마다 실행)
-    # scheduler.add_job(best_sellers_update_task, 'interval', minutes=1)
+    scheduler.add_job(best_sellers_update_task, 'interval', minutes=1)
     # 스케줄러에 작업 추가 (매달 1일마다 실행)
-    scheduler.add_job(best_sellers_update_task, 'cron', day=1, hour=0, minute=0)
+    # scheduler.add_job(best_sellers_update_task, 'cron', day=1, hour=0, minute=0)
     
     # 스케줄러 시작
     scheduler.start()
 
-    # 백그라운드에서 스케줄러가 실행되도록 유지
-    try:
-        while True:
-            time.sleep(2)
-    except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()
+    # # 백그라운드에서 스케줄러가 실행되도록 유지
+    # try:
+    #     while True:
+    #         time.sleep(2)
+    # except (KeyboardInterrupt, SystemExit):
+    #     scheduler.shutdown()

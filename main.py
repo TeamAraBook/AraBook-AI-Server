@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 import openai
 from fastapi import FastAPI, HTTPException
@@ -16,8 +18,15 @@ from database_conn import insert_book_info_to_db
 # .env 파일에서 환경 변수 로드
 load_dotenv()
 
-app = FastAPI()
-app.add_event_handler("startup", start_scheduler)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting scheduler...")
+    start_scheduler()
+    print("Scheduler started.")
+    yield
+    print("Stopping scheduler...")
+
+app = FastAPI(lifespan=lifespan)
 
 # OpenAI API Key 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")

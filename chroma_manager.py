@@ -20,6 +20,17 @@ class ChromaManager:
 
         if existing_books["ids"]:  # 이미 존재하는 경우
             return "이미 존재하는 책 정보입니다."
+        if main_category is None or not isinstance(main_category, str):
+            print(main_category)
+            raise ValueError("main_category must be a non-empty string.")
+        
+        if sub_category is None or not isinstance(sub_category, list):
+            print(sub_category)
+            raise ValueError("sub_category must be a list.")
+
+        if hashtags is None or not isinstance(hashtags, list):
+            print(hashtags)
+            raise ValueError("hashtags must be a list.")
 
         # None 값 처리
         sub_category = sub_category if sub_category is not None else []
