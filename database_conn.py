@@ -217,3 +217,18 @@ def insert_best_sellers(best_sellers):
         connection.rollback()  # 오류 발생 시 롤백
     finally:
         connection.close()  # 연결 종료
+
+def get_all_member_ids():
+    """모든 회원 ID를 반환합니다."""
+    connection, tunnel = connect_to_db()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT member_id FROM members")
+            results = cursor.fetchall()
+            return [row['member_id'] for row in results]
+    except Exception as e:
+        print(f"Error occurred, Error: {e}")
+        return []
+    finally:
+        connection.close()
+        tunnel.close()
