@@ -187,6 +187,36 @@ def save_recommendation(member_id, book_id, recommendation_date):
     finally:
         connection.close()
         tunnel.close()
+        
+def insert_best_sellers(best_sellers):
+    connection, tunnel = connect_to_db()  # DB 연결 생성
+    if not connection:
+        print("데이터베이스 연결에 실패했습니다.")
+        return  # 연결 실패 시 종료
+
+    try:
+        with connection.cursor() as cursor:
+            # 기존 베스트셀러 데이터 삭제
+            sql_delete = "DELETE FROM monthly_best_sellers"
+            cursor.execute(sql_delete)  # 쿼리 실행
+
+            # 삽입할 쿼리 템플릿
+            sql_insert = "INSERT INTO monthly_best_sellers (book_isbn, book_rank) VALUES (%s, %s)"
+
+            # 각 베스트셀러에 대해 ISBN과 순위를 DB에 삽입
+            for best_seller in best_sellers:
+                isbn = best_seller['isbn']
+                rank = best_seller['best_rank']
+                cursor.execute(sql_insert, (isbn, rank))  # 쿼리 실행
+            
+            connection.commit()  # 변경 사항 커밋
+            print("베스트셀러 데이터가 성공적으로 삽입되었습니다.")
+
+    except Exception as e:
+        print(f"데이터 삽입 중 오류 발생: {e}")
+        connection.rollback()  # 오류 발생 시 롤백
+    finally:
+        connection.close()  # 연결 종료
 
 def get_all_member_ids():
     """모든 회원 ID를 반환합니다."""

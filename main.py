@@ -2,16 +2,16 @@ from dotenv import load_dotenv
 import openai
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+import chromadb
 import os
-from book_info import get_book_info_by_isbn
+
+from book_info import get_book_info_by_isbn 
 from chroma_manager import ChromaManager
 from category_classifier import classify_category
 from crawling import get_hashtags
-
-import chromadb
-
-from database_conn import insert_book_info_to_db
 from scheduler import start_scheduler
+from database_conn import insert_book_info_to_db
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
