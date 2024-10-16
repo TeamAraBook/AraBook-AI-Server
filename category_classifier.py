@@ -31,6 +31,7 @@ def classify_category(title, author, isbn, description, hashtags):
 
     예시:
     대분류 - 소분류1, 소분류2, 소분류3
+    반드시 예시 형식에 맞춰 응답해줘.
 
     책 정보:
     - 제목: {title}
@@ -53,8 +54,14 @@ def classify_category(title, author, isbn, description, hashtags):
 
     # 주어진 형식에 맞게 응답 파싱
     try:
-        main_category = response_text.split("\n")[0].split(" -")[1].strip()
-        sub_categories = response_text.split("\n")[1].split(" -")[1].strip().split(", ")
+        print(response_text)
+        if "대분류" not in response_text:
+            # 사회 - 사회학, 경제
+            main_category = response_text.split(" -")[0].strip()
+            sub_categories = response_text.split(" -")[1].strip().split(", ")
+        else:
+            main_category = response_text.split("\n")[0].split(" -")[1].strip()
+            sub_categories = response_text.split("\n")[1].split(" -")[1].strip().split(", ")
         return main_category, sub_categories
     except IndexError:
         print("응답 형식이 예상과 다릅니다.")
