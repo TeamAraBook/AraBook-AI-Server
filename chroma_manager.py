@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import os
-from typing import List
+from typing import List, Optional
 from fastapi import HTTPException
 from database_conn import get_book_id_by_isbn, get_member_preferences, save_recommendation
 from langchain_openai import OpenAIEmbeddings
@@ -14,12 +14,16 @@ class ChromaManager:
             openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
 
-    def add_book(self, book, main_category: str, sub_category: List[str], hashtags: List[str]) -> str:
+    def add_book(self, book, main_category: str, sub_category: Optional[List[str]], hashtags: Optional[List[str]]) -> str:
         # ISBN으로 책 정보가 이미 존재하는지 확인
         existing_books = self.collection.get(ids=[book.isbn])
 
         if existing_books["ids"]:  # 이미 존재하는 경우
             return "이미 존재하는 책 정보입니다."
+
+        # None 값 처리
+        sub_category = sub_category if sub_category is not None else []
+        hashtags = hashtags if hashtags is not None else []
 
         sub_category_str = ', '.join(sub_category)  # 리스트를 문자열로 변환
         hashtags_str = ', '.join(hashtags)          # 리스트를 문자열로 변환
@@ -45,6 +49,7 @@ class ChromaManager:
             ids=[book.isbn]
         )
         return "책 정보가 성공적으로 추가되었습니다."
+
     
     def delete_book(self, isbn: str) -> str:
         # ISBN으로 책 정보가 존재하는지 확인
