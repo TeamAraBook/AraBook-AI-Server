@@ -77,9 +77,9 @@ def start_scheduler():
     scheduler.add_job(run_recommendations_for_all_members, 'cron', hour=0, minute=1)
     
     # # 스케줄러에 작업 추가 (매 1분마다 실행)
-    scheduler.add_job(best_sellers_update_task, 'interval', minutes=1)
+    # scheduler.add_job(best_sellers_update_task, 'interval', minutes=1)
     # 스케줄러에 작업 추가 (매달 1일마다 실행)
-    # scheduler.add_job(best_sellers_update_task, 'cron', day=1, hour=0, minute=0)
+    scheduler.add_job(best_sellers_update_task, 'cron', day=1, hour=0, minute=0)
     
     # 스케줄러 시작
     scheduler.start()
