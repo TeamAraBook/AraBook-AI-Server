@@ -187,3 +187,18 @@ def save_recommendation(member_id, book_id, recommendation_date):
     finally:
         connection.close()
         tunnel.close()
+
+def get_all_member_ids():
+    """모든 회원 ID를 반환합니다."""
+    connection, tunnel = connect_to_db()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT member_id FROM members")
+            results = cursor.fetchall()
+            return [row['member_id'] for row in results]
+    except Exception as e:
+        print(f"Error occurred, Error: {e}")
+        return []
+    finally:
+        connection.close()
+        tunnel.close()

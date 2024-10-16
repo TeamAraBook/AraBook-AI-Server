@@ -11,11 +11,13 @@ from crawling import get_hashtags
 import chromadb
 
 from database_conn import insert_book_info_to_db
+from scheduler import start_scheduler
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
 
 app = FastAPI()
+app.add_event_handler("startup", start_scheduler)
 
 # OpenAI API Key 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -59,6 +61,7 @@ class BookRequest(BaseModel):
 
 class RecommendRequest(BaseModel):
     member_id: int
+
 
 # 기본 엔드포인트
 @app.post("/generate")
